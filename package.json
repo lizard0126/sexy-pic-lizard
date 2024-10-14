@@ -1,7 +1,11 @@
 {
   "name": "koishi-plugin-sexy-pic-lizard",
-  "description": "随机NSFW图，包括超多tag",
-  "version": "0.0.1",
+  "description": "随机SFW/NSFW图，包括超多tag，甚至有重口男同",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lizard0126/sexy-pic-lizard.git"
+  },
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -9,13 +13,14 @@
     "dist"
   ],
   "license": "MIT",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
-    "plugin"
+    "plugin",
+    "pic",
+    "nsfw",
+    "色图"
   ],
-  "devDependencies": {},
   "peerDependencies": {
     "koishi": "4.18.0"
   }
