@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-sexy-pic-lizard",
   "description": "随机SFW/NSFW图，包括超多tag，甚至有重口男同",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lizard0126/sexy-pic-lizard.git"
