@@ -1,20 +1,26 @@
 import { Context, Schema, h } from 'koishi';
-
 // npm publish --workspace koishi-plugin-sexy-pic-lizard --access public --registry https://registry.npmjs.org
 export const name = 'sexy-pic-lizard';
 
+// 插件使用说明
 export const usage = `
-# 随机SFW/NSFW图片，内含超多tag
-## 支持的SFW-tags:
-- holo、neko、kemonomimi、kanna、gah、coffee、food
-## 支持的NSFW-tags:
-- hass、hmidriff、pgif、4k、hentai、hneko、hkitsune、hanal、ass、thigh、hthigh、paizuri、boobs、hboobs
-## 以下tags过于重口或过于真实，请酌情使用:
-- anal、gonewild、pussy、tentacle
-## 我超，有男同:
-- yaoi
+## 随机SFW/NSFW图片，内含超多tag:
 
-# 主要功能的示例调用
+<details>
+
+### 支持的SFW-tags:
+- holo、neko、kemonomimi、kanna、gah、coffee、food
+### 支持的NSFW-tags:
+- hass、hmidriff、pgif、4k、hentai、hneko、hkitsune、hanal、ass、thigh、hthigh、paizuri、boobs、hboobs
+### 以下tags过于重口或过于真实，请酌情使用:
+- anal、gonewild、pussy、tentacle
+### 我超，有男同:
+- yaoi
+</details>
+
+## 主要功能的示例调用
+<details>
+
   - 示例指令：pic
     - 返回随机选取的tag的图片
 
@@ -26,18 +32,24 @@ export const usage = `
 
   - 示例指令：tags
     - 返回已开启的可用的tag
+
+</details>
+
 `;
 
+// 标签定义
 const sfwTags = ['holo', 'neko', 'kemonomimi', 'kanna', 'gah', 'coffee', 'food'];
 const nsfwTags = ['hass', 'hmidriff', 'pgif', '4k', 'hentai', 'hneko', 'hkitsune', 'hanal', 'ass', 'thigh', 'hthigh', 'paizuri', 'boobs', 'hboobs'];
 const extremeTags = ['anal', 'gonewild', 'pussy', 'tentacle'];
 const blTags = ['yaoi'];
 
+// 随机选择标签
 function getRandomTag(tags: string[]) {
   const randomIndex = Math.floor(Math.random() * tags.length);
   return tags[randomIndex];
 }
 
+// 配置接口
 export interface Config {
   apiUrl: string;
   enableSfwTags: boolean;
@@ -47,6 +59,7 @@ export interface Config {
   enableForward: boolean;
 }
 
+// 配置定义
 export const Config = Schema.object({
   apiUrl: Schema.string()
     .default('https://nekobot.xyz/api')
@@ -70,9 +83,11 @@ export const Config = Schema.object({
 
 export const imageTagApi = '/image?type=';
 
+// 插件应用
 export function apply(ctx: Context) {
   const logger = ctx.logger('sexy-pic-lizard');
 
+  // 获取启用的标签
   function getEnabledTags(config: Config) {
     const enabledTags: string[] = [];
     if (config.enableSfwTags) {
@@ -90,6 +105,7 @@ export function apply(ctx: Context) {
     return enabledTags;
   }
 
+  // 格式化标签输出
   function formatTags(enabledTags: string[]) {
     const formattedTags: { [key: string]: string[] } = {
       'SFW 标签': [],
@@ -110,36 +126,38 @@ export function apply(ctx: Context) {
       }
     });
 
-    const formattedList = Object.entries(formattedTags)
+    return Object.entries(formattedTags)
       .filter(([, tags]) => tags.length > 0)
       .map(([category, tags]) => `${category}: ${tags.join(', ')}`)
       .join('\n\n');
-    
-    logger.info(`格式化后的标签列表:\n${formattedList}`);
-    return formattedList;
   }
 
+  // 检查标签有效性
   function isValidTag(tag: string, enabledTags: string[]) {
-    const isValid = enabledTags.includes(tag);
-    return isValid;
+    return enabledTags.includes(tag);
   }
 
-  ctx.command('tags', '显示所有支持的标签')
+  const picCommand = ctx.command('pic', '获取随机SFW/NSFW图片')
+  // 显示所有支持的标签
+  picCommand
+    .subcommand('.tag', '显示支持的标签')
     .action(({ session }) => {
       const enabledTags = getEnabledTags(ctx.config);
       const formattedTagList = formatTags(enabledTags);
       return `开启的标签如下:\n${formattedTagList}`;
     });
 
-  ctx.command('pic <tag>', '获取随机SFW/NSFW图片,根据可选参数最多5张')
+  // 获取随机图片命令
+  picCommand
+    .subcommand('.获取', '获取随机SFW/NSFW图片,根据可选参数最多10张')
     .option('tag', '-t <tag:string>')
     .option('count', '-c <count:number>', { fallback: 1 })
     .action(async ({ session, options }, tag) => {
       const enabledTags = getEnabledTags(ctx.config);
       const selectedTag = tag || options.tag || getRandomTag(enabledTags);
-      const count = Math.min(Math.max(options.count, 1), 5);
+      const count = Math.min(Math.max(options.count, 1), 10);
 
-      logger.info(`选择的标签: ${selectedTag}, 请求的图片数量: ${count}`);
+      //logger.info(`选择的标签: ${selectedTag}, 请求的图片数量: ${count}`);
 
       if (!isValidTag(selectedTag, enabledTags)) {
         const formattedTagList = formatTags(enabledTags);
@@ -149,28 +167,23 @@ export function apply(ctx: Context) {
       const apiUrl = ctx.config.apiUrl + imageTagApi + selectedTag;
 
       try {
-        //logger.info(`开始发送 ${count} 个并发请求`);
         const imagePromises = Array.from({ length: count }, async () => {
           const response = await ctx.http.get(apiUrl);
           const { success, message } = response;
 
           if (success && message) {
-            //logger.info('成功获取图片数据');
             return message;
           } else {
-            //logger.error('API请求失败或未获取到图片数据');
             return null;
           }
         });
 
         const images: (string | null)[] = await Promise.all(imagePromises);
         const validImages = images.filter(image => image);
-        //logger.info(`获取到有效图片数量: ${validImages.length}`);
 
         if (validImages.length > 0) {
           if (ctx.config.enableForward) {
-            //logger.info('准备发送合并转发消息');
-            const forwardMessages = validImages.map((imageUrl, index) => {
+            const forwardMessages = validImages.map((imageUrl) => {
               const attrs = {
                 userId: session.userId,
                 nickname: session.username || '用户',
@@ -180,12 +193,9 @@ export function apply(ctx: Context) {
 
             const forwardMessage = h('message', { forward: true, children: forwardMessages });
             await session.send(forwardMessage);
-            //logger.info(`合并转发消息发送成功，图片数量: ${validImages.length}`);
           } else {
-            logger.info('逐个发送图片');
             for (const imageUrl of validImages) {
               await session.send(h.image(imageUrl));
-              logger.info(`发送图片: ${imageUrl}`);
             }
           }
         } else {
