@@ -67,17 +67,7 @@ const tagCategories = {
   bl: ['yaoi'],
 };
 
-export interface Config {
-  apiUrl: string;
-  enableSfwTags: boolean;
-  enableNsfwTags: boolean;
-  enableExtremeTags: boolean;
-  enableBlTags: boolean;
-  enableForward: boolean;
-}
-
 export const Config = Schema.object({
-  apiUrl: Schema.string().default('https://nekobot.xyz/api').description('默认API请勿更改'),
   enableSfwTags: Schema.boolean().default(true).description('是否启用SFW标签'),
   enableNsfwTags: Schema.boolean().default(true).description('是否启用NSFW标签'),
   enableExtremeTags: Schema.boolean().default(false).description('是否启用重口标签'),
@@ -86,7 +76,7 @@ export const Config = Schema.object({
 });
 
 export function apply(ctx: Context) {
-  function getEnabledTags(config: Config, random = false): string | string[] {
+  function getEnabledTags(config, random = false): string | string[] {
     const enabledTags: string[] = [];
     if (config.enableSfwTags) enabledTags.push(...tagCategories.sfw);
     if (config.enableNsfwTags) enabledTags.push(...tagCategories.nsfw);
@@ -140,7 +130,7 @@ export function apply(ctx: Context) {
         return `不支持 ${selectedTag} 标签！\n请使用以下可用标签之一：\n${enabledTags.join(', ')}`;
       }
 
-      const apiUrl = `${ctx.config.apiUrl}/image?type=${selectedTag}`;
+      const apiUrl = `https://nekobot.xyz/api/image?type=${selectedTag}`;
       try {
         const urlResults = await Promise.allSettled(
           Array.from({ length: count }, () => ctx.http.get(apiUrl).then(res => res.message))
@@ -152,7 +142,6 @@ export function apply(ctx: Context) {
         if (imageUrls.length === 0) {
           return '请求失败，请检查API或网络连接。';
         }
-        ctx.logger.info(imageUrls);
         
         if (ctx.config.enableForward) {
           await forward(session, imageUrls.map(url => ({ src: url, referer: apiUrl })), session.userId);
