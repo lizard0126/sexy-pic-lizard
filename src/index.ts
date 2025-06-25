@@ -1,5 +1,5 @@
 import { Context, Schema, h } from 'koishi';
-// npm publish --workspace koishi-plugin-sexy-pic-lizard --access public --registry https://registry.npmjs.org
+
 export const name = 'sexy-pic-lizard';
 
 export const usage = `
