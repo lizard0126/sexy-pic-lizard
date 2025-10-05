@@ -27,7 +27,7 @@
 </details>
 
 <details>
-<summary><strong><span style="font-size: 1.3em; color: #2a2a2a;">📜 使用方法</span></strong></summary>
+<summary><strong><span style="font-size: 1.3em; color: #2a2a2a;">使用方法</span></strong></summary>
 
 ### **随机获取图片**
 #### 示例：
@@ -39,16 +39,14 @@
 
 ### **获取多张图片**
 #### 示例：
-<pre style="background-color: #f4f4f4; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">pic boobs -c 5 // 获取 5 张 boobs 图片</pre>
+<pre style="background-color: #f4f4f4; padding: 10px; border-radius: 4px; border: 1px solid #ddd;">pic boobs -c 5 // 获取 5 张 boobs 图片（不输入则默认5张，可通过配置修改</pre>
 
 </details>
-
----
 
 <details>
 <summary><strong><span style="font-size: 1.3em; color: #2a2a2a;">如果要反馈建议或报告问题</span></strong></summary>
 
-<strong>可以[点这里](https://github.com/lizard0126/javbus-lizard/issues)创建议题~</strong>
+<strong>可以[点这里](https://github.com/lizard0126/sexy-pic-lizard/issues)创建议题~</strong>
 </details>
 
 <details>
