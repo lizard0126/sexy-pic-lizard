@@ -3,7 +3,7 @@ import { Context, Schema, h } from 'koishi';
 export const name = 'sexy-pic-lizard';
 
 const tagCategories = {
-  sfw: ['holo', 'neko', 'kemonomimi', 'kanna', 'gah', 'coffee', 'food'],
+  sfw: ['holo', 'neko', 'kemonomimi', 'kanna', 'coffee', 'food'],
   nsfw: ['hass', 'hmidriff', 'pgif', '4k', 'hentai', 'hneko', 'hkitsune', 'hanal', 'ass', 'thigh', 'hthigh', 'paizuri', 'boobs', 'hboobs'],
   extreme: ['anal', 'gonewild', 'pussy', 'tentacle'],
   bl: ['yaoi'],
@@ -131,8 +131,15 @@ export function apply(ctx: Context) {
       }
 
     } else {
-      await session.send(`当前平台（${platform}）暂不支持合并转发功能。`);
+      await session.send(`当前平台（${platform}）暂不支持合并转发功能，将顺序发送`);
       await bot.deleteMessage(session.channelId, tipMessageId);
+      for (const msg of messages) {
+        if (msg.text) {
+          await session.send(msg.text + h.image(await fetchImage(msg.src, msg.referer)));
+        } else {
+          await session.send(h.image(await fetchImage(msg.src, msg.referer)));
+        }
+      }
     }
   }
 
@@ -141,32 +148,39 @@ export function apply(ctx: Context) {
     .option('count', '-c <count:number>')
     .action(async ({ session, options }, tag) => {
       const enabledTags = getEnabledTags(ctx.config) as string[];
-      const selectedTag = tag || options.tag || getEnabledTags(ctx.config, true) as string;
       const count = options.count || ctx.config.defaultCount
+      const selectedTag = tag || options.tag;
 
-      if (!enabledTags.includes(selectedTag)) {
-        return h('quote', session.messageId) +
-          `不支持标签「${selectedTag}」。\n可用标签：${enabledTags.join(', ')}`
+      if (selectedTag && !enabledTags.includes(selectedTag)) {
+        return `不支持标签「${selectedTag}」。\n可用标签：${enabledTags.join(', ')}`
       }
 
-      const apiUrl = `https://nekobot.xyz/api/image?type=${selectedTag}`;
       try {
-        const imageUrls = (
-          await Promise.allSettled(
-            Array.from({ length: count }, () => ctx.http.get(apiUrl).then(res => res.message))
-          )
-        ).flatMap(res => (res.status === 'fulfilled' ? [res.value] : []));
+        const requests = Array.from({ length: count }, () => {
+          const tagToUse = selectedTag || getEnabledTags(ctx.config, true) as string;
+          const apiUrl = `https://nekobot.xyz/api/image?type=${tagToUse}`;
+          return ctx.http.get(apiUrl).then(res => ({
+            url: res.message,
+            referer: apiUrl,
+            tag: tagToUse
+          }));
+        });
 
-        if (imageUrls.length === 0) {
-          return '请求失败，请检查API或网络连接。';
+        const results = await Promise.allSettled(requests);
+        const images = results
+          .filter(r => r.status === 'fulfilled')
+          .map(r => (r as PromiseFulfilledResult<any>).value);
+
+        if (images.length === 0) {
+          return '全部请求失败，请检查API或网络连接。';
         }
 
         if (ctx.config.enableForward) {
-          await forward(session, imageUrls.map(url => ({ src: url, referer: apiUrl })));
+          await forward(session, images.map(i => ({ src: i.url, referer: i.referer })));
         } else {
-          await Promise.all(
-            imageUrls.map(async (url) => session.send(h.image(await fetchImage(url, apiUrl))))
-          );
+          for (const img of images) {
+            await session.send(h.image(await fetchImage(img.url, img.referer)));
+          }
         }
       } catch (error) {
         return '请求失败！';

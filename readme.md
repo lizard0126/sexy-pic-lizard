@@ -12,7 +12,7 @@
 <summary><strong><span style="font-size: 1.3em; color: #2a2a2a;">📌 支持的标签列表</span></strong></summary>
 
 ### ✅ **SFW 标签（适合所有人）**
-- \`holo\`、\`neko\`、\`kemonomimi\`、\`kanna\`、\`gah\`、\`coffee\`、\`food\`
+- \`holo\`、\`neko\`、\`kemonomimi\`、\`kanna\`、\`coffee\`、\`food\`
 
 ### 🔞 **NSFW 标签（请注意环境）**
 - \`hass\`、\`hmidriff\`、\`pgif\`、\`4k\`、\`hentai\`、\`hneko\`、\`hkitsune\`、\`hanal\`
